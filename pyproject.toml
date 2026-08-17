@@ -1,0 +1,16 @@
+[project]
+name = "comfyui-mm-1frame"
+version = "0.1.0"
+description = "Native true one-frame MiniMax H3 nodes for ComfyUI"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]

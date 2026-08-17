@@ -1,0 +1,346 @@
+{
+  "last_node_id": 15,
+  "last_link_id": 17,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [-850, -450],
+      "size": [360, 106],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [1]}
+      ],
+      "properties": {"Node name for S&R": "UNETLoader"},
+      "widgets_values": [
+        "minimax_h3_ref2va_pruned_int8_convrot.safetensors",
+        "default"
+      ],
+      "title": "Load MiniMax H3 Ref2VA"
+    },
+    {
+      "id": 2,
+      "type": "ModelAttentionBackend",
+      "pos": [-420, -450],
+      "size": [360, 90],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 1}
+      ],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [2]}
+      ],
+      "properties": {"Node name for S&R": "ModelAttentionBackend"},
+      "widgets_values": ["comfy kitchen attention"],
+      "title": "Comfy Kitchen Attention"
+    },
+    {
+      "id": 3,
+      "type": "LoraLoaderModelOnly",
+      "pos": [0, -450],
+      "size": [380, 106],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 2}
+      ],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [3]}
+      ],
+      "properties": {"Node name for S&R": "LoraLoaderModelOnly"},
+      "widgets_values": [
+        "h3\\minimax_h3_fl2v_lightx2v_turbo_8step_v1.0_resized_avg_rank_24_bf16.safetensors",
+        0.75
+      ],
+      "title": "8-Step Turbo LoRA"
+    },
+    {
+      "id": 4,
+      "type": "LoraLoaderModelOnly",
+      "pos": [440, -450],
+      "size": [380, 106],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 3}
+      ],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [4, 5]}
+      ],
+      "properties": {"Node name for S&R": "LoraLoaderModelOnly"},
+      "widgets_values": [
+        "h3\\MaxiMin-HHH-R2V-ThisIsFine_LoRA_V0_1.safetensors",
+        1.0
+      ],
+      "title": "ThisIsFine Detail LoRA"
+    },
+    {
+      "id": 5,
+      "type": "CLIPLoader",
+      "pos": [-850, -250],
+      "size": [360, 132],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "CLIP", "type": "CLIP", "links": [6]}
+      ],
+      "properties": {"Node name for S&R": "CLIPLoader"},
+      "widgets_values": [
+        "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+        "minimax",
+        "default"
+      ],
+      "title": "Load MiniMax H3 Text Encoder"
+    },
+    {
+      "id": 6,
+      "type": "VAELoader",
+      "pos": [-850, -50],
+      "size": [360, 90],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "VAE", "type": "VAE", "links": [7, 16]}
+      ],
+      "properties": {"Node name for S&R": "VAELoader"},
+      "widgets_values": ["minimax_h3_t1_image_vae_step1597.safetensors"],
+      "title": "Load T=1 Image VAE"
+    },
+    {
+      "id": 7,
+      "type": "LoadImage",
+      "pos": [-850, 250],
+      "size": [360, 310],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "IMAGE", "type": "IMAGE", "links": [8]},
+        {"name": "MASK", "type": "MASK", "links": null}
+      ],
+      "properties": {"Node name for S&R": "LoadImage"},
+      "widgets_values": ["choose_reference_image.png"],
+      "title": "Load Reference Image"
+    },
+    {
+      "id": 8,
+      "type": "MM1FrameMiniMaxH3ReferenceToImage",
+      "pos": [-380, 100],
+      "size": [620, 320],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {"name": "clip", "type": "CLIP", "link": 6},
+        {"name": "vae", "type": "VAE", "link": 7},
+        {"name": "ref_images.ref_image_0", "type": "*", "link": 8}
+      ],
+      "outputs": [
+        {"name": "positive", "type": "CONDITIONING", "links": [14]},
+        {"name": "LATENT", "type": "LATENT", "links": [13]}
+      ],
+      "properties": {"Node name for S&R": "MM1FrameMiniMaxH3ReferenceToImage"},
+      "widgets_values": [
+        "Reference-guided image edit. Transform the adult person in <Picture 1> into a polished cinematic fashion portrait. Preserve their recognizable identity, facial features, hairstyle, body proportions, and natural expression. Dress them in a tailored emerald evening suit with refined fabric detail and place them in a grand art-deco hotel lobby at golden hour. Full-body editorial composition, both feet visible, realistic anatomy, coherent reflections, cinematic soft light, premium magazine photography.",
+        1024,
+        1536,
+        "max"
+      ],
+      "title": "MiniMax H3 Reference Edit — True 1 Frame"
+    },
+    {
+      "id": 9,
+      "type": "RandomNoise",
+      "pos": [400, 50],
+      "size": [360, 106],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "NOISE", "type": "NOISE", "links": [9]}
+      ],
+      "properties": {"Node name for S&R": "RandomNoise"},
+      "widgets_values": [20260817, "fixed"],
+      "title": "Seed"
+    },
+    {
+      "id": 10,
+      "type": "KSamplerSelect",
+      "pos": [400, 210],
+      "size": [360, 90],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "SAMPLER", "type": "SAMPLER", "links": [11]}
+      ],
+      "properties": {"Node name for S&R": "KSamplerSelect"},
+      "widgets_values": ["sa_solver"],
+      "title": "SA Solver"
+    },
+    {
+      "id": 11,
+      "type": "BasicScheduler",
+      "pos": [850, -250],
+      "size": [360, 132],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 4}
+      ],
+      "outputs": [
+        {"name": "SIGMAS", "type": "SIGMAS", "links": [12]}
+      ],
+      "properties": {"Node name for S&R": "BasicScheduler"},
+      "widgets_values": ["simple", 8, 1.0],
+      "title": "8 Steps / Simple Scheduler"
+    },
+    {
+      "id": 12,
+      "type": "BasicGuider",
+      "pos": [850, 50],
+      "size": [360, 106],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 5},
+        {"name": "conditioning", "type": "CONDITIONING", "link": 14}
+      ],
+      "outputs": [
+        {"name": "GUIDER", "type": "GUIDER", "links": [10]}
+      ],
+      "properties": {"Node name for S&R": "BasicGuider"},
+      "widgets_values": [],
+      "title": "CFG 1 Distilled Guidance"
+    },
+    {
+      "id": 13,
+      "type": "SamplerCustomAdvanced",
+      "pos": [1300, -50],
+      "size": [360, 184],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {"name": "noise", "type": "NOISE", "link": 9},
+        {"name": "guider", "type": "GUIDER", "link": 10},
+        {"name": "sampler", "type": "SAMPLER", "link": 11},
+        {"name": "sigmas", "type": "SIGMAS", "link": 12},
+        {"name": "latent_image", "type": "LATENT", "link": 13}
+      ],
+      "outputs": [
+        {"name": "output", "type": "LATENT", "links": [15]},
+        {"name": "denoised_output", "type": "LATENT", "links": null}
+      ],
+      "properties": {"Node name for S&R": "SamplerCustomAdvanced"},
+      "widgets_values": [],
+      "title": "Sample One Frame"
+    },
+    {
+      "id": 14,
+      "type": "VAEDecode",
+      "pos": [1750, -50],
+      "size": [360, 106],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {"name": "samples", "type": "LATENT", "link": 15},
+        {"name": "vae", "type": "VAE", "link": 16}
+      ],
+      "outputs": [
+        {"name": "IMAGE", "type": "IMAGE", "links": [17]}
+      ],
+      "properties": {"Node name for S&R": "VAEDecode"},
+      "widgets_values": [],
+      "title": "Decode Single Image"
+    },
+    {
+      "id": 15,
+      "type": "SaveImage",
+      "pos": [2160, -50],
+      "size": [360, 270],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {"name": "images", "type": "IMAGE", "link": 17}
+      ],
+      "outputs": [
+        {"name": "images", "type": "IMAGE", "links": null}
+      ],
+      "properties": {"Node name for S&R": "SaveImage"},
+      "widgets_values": ["MM1Frame/showcase_ref_edit"],
+      "title": "Save Showcase Image"
+    }
+  ],
+  "links": [
+    [1, 1, 0, 2, 0, "MODEL"],
+    [2, 2, 0, 3, 0, "MODEL"],
+    [3, 3, 0, 4, 0, "MODEL"],
+    [4, 4, 0, 11, 0, "MODEL"],
+    [5, 4, 0, 12, 0, "MODEL"],
+    [6, 5, 0, 8, 0, "CLIP"],
+    [7, 6, 0, 8, 1, "VAE"],
+    [8, 7, 0, 8, 2, "IMAGE"],
+    [9, 9, 0, 13, 0, "NOISE"],
+    [10, 12, 0, 13, 1, "GUIDER"],
+    [11, 10, 0, 13, 2, "SAMPLER"],
+    [12, 11, 0, 13, 3, "SIGMAS"],
+    [13, 8, 1, 13, 4, "LATENT"],
+    [14, 8, 0, 12, 1, "CONDITIONING"],
+    [15, 13, 0, 14, 0, "LATENT"],
+    [16, 6, 0, 14, 1, "VAE"],
+    [17, 14, 0, 15, 0, "IMAGE"]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "1 — MODEL + 8-STEP LORAS",
+      "bounding": [-900, -520, 1750, 220],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "2 — LOAD A REFERENCE + WRITE THE EDIT",
+      "bounding": [-900, -320, 1190, 960],
+      "color": "#8f7a3d",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "3 — SAMPLE + SAVE",
+      "bounding": [340, -320, 2250, 700],
+      "color": "#4b7f52",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.65,
+      "offset": [950, 470]
+    }
+  },
+  "version": 0.4
+}
