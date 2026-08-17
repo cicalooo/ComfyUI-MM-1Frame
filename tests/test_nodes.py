@@ -84,7 +84,83 @@ def test_reference_node_builds_native_ref_payload(monkeypatch):
     assert audio.shape == (1, 32, 2, 2)
 
 
-def test_extension_registers_both_nodes():
+def test_middle_frame_picker_returns_upper_middle_and_preserves_tensor_metadata():
+    for frame_count, expected_index in ((1, 0), (5, 2), (124, 62)):
+        images = torch.arange(frame_count * 2 * 3 * 3, dtype=torch.float16).reshape(frame_count, 2, 3, 3)
+
+        selected = mm_nodes.MM1FramePickMiddleFrame.execute(images).result[0]
+
+        assert selected.shape == (1, 2, 3, 3)
+        assert torch.equal(selected, images[expected_index : expected_index + 1])
+        assert selected.dtype == images.dtype
+        assert selected.device == images.device
+
+
+def test_middle_frame_picker_accepts_total_range_and_midpoint_sliders():
+    images = torch.arange(10 * 2 * 3 * 3, dtype=torch.float32).reshape(10, 2, 3, 3)
+
+    selected = mm_nodes.MM1FramePickMiddleFrame.execute(
+        images,
+        total_range=8,
+        midpoint=5,
+    ).result[0]
+
+    assert torch.equal(selected, images[5:6])
+
+    full_sequence = torch.arange(124 * 2 * 3 * 3, dtype=torch.float32).reshape(124, 2, 3, 3)
+    selected = mm_nodes.MM1FramePickMiddleFrame.execute(
+        full_sequence,
+        total_range=124,
+        midpoint=62,
+    ).result[0]
+
+    assert torch.equal(selected, full_sequence[62:63])
+
+
+def test_middle_frame_picker_rejects_empty_or_invalid_input():
+    invalid_inputs = (torch.empty(0, 2, 3, 3), torch.empty(2, 3, 3), None)
+
+    for images in invalid_inputs:
+        try:
+            mm_nodes.MM1FramePickMiddleFrame.execute(images)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("invalid IMAGE input was accepted")
+
+
+def test_middle_frame_picker_rejects_invalid_slider_values():
+    images = torch.zeros(5, 2, 3, 3)
+
+    invalid_sliders = (
+        {"total_range": 0, "midpoint": 0},
+        {"total_range": 6, "midpoint": 2},
+        {"total_range": 5, "midpoint": 5},
+        {"total_range": 5, "midpoint": -1},
+    )
+
+    for sliders in invalid_sliders:
+        try:
+            mm_nodes.MM1FramePickMiddleFrame.execute(images, **sliders)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("invalid slider values were accepted")
+
+
+def test_middle_frame_picker_schema_is_image_to_one_image():
+    schema = mm_nodes.MM1FramePickMiddleFrame.define_schema()
+
+    assert schema.node_id == "MM1FramePickMiddleFrame"
+    assert [input_.id for input_ in schema.inputs] == ["images", "total_range", "midpoint"]
+    assert [input_.io_type for input_ in schema.inputs] == ["IMAGE", "INT", "INT"]
+    assert schema.inputs[1].default == 124
+    assert schema.inputs[2].default == 62
+    assert [output.io_type for output in schema.outputs] == ["IMAGE"]
+    assert "midpoint slider" in schema.description
+
+
+def test_extension_registers_three_nodes():
     import importlib.util
     import sys
     from pathlib import Path
@@ -105,4 +181,5 @@ def test_extension_registers_both_nodes():
     assert [node.define_schema().node_id for node in registered] == [
         "MM1FrameEmptyMiniMaxH3LatentAV",
         "MM1FrameMiniMaxH3ReferenceToImage",
+        "MM1FramePickMiddleFrame",
     ]

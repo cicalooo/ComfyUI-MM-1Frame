@@ -1,6 +1,8 @@
 __pycache__/
 .pytest_cache/
 *.py[cod]
+.ancillary/runs/20260817T130950-quality-benchmark/
+.ancillary/runs/20260817T132548-vae-quantization/
 .ancillary/runs/20260817T114236-readme-links/STATE.md
 .ancillary/runs/20260817T114236-readme-links/PLAN.md
 .ancillary/runs/20260817T114236-readme-links/phases/01/STEPS.md
@@ -19,3 +21,17 @@ __pycache__/
 .ancillary/runs/20260817T054057-mm-1frame/phases/01/hard-gate-01.md
 .ancillary/runs/20260817T054057-mm-1frame/DECISIONS.md
 .ancillary/runs/20260817T054057-mm-1frame/COMPLETION.md
+.ancillary/runs/20260817T150000-middle-frame-slider/STATE.md
+.ancillary/runs/20260817T150000-middle-frame-slider/PLAN.md
+.ancillary/runs/20260817T150000-middle-frame-slider/phases/01/STEPS.md
+.ancillary/runs/20260817T150000-middle-frame-slider/phases/01/hard-gate-01.md
+.ancillary/runs/20260817T150000-middle-frame-slider/phases/01/evidence/verification.md
+.ancillary/runs/20260817T150000-middle-frame-slider/DECISIONS.md
+.ancillary/runs/20260817T150000-middle-frame-slider/COMPLETION.md
+.ancillary/runs/20260817T140000-h3-middle-frame/STATE.md
+.ancillary/runs/20260817T140000-h3-middle-frame/PLAN.md
+.ancillary/runs/20260817T140000-h3-middle-frame/phases/01/STEPS.md
+.ancillary/runs/20260817T140000-h3-middle-frame/phases/01/hard-gate-01.md
+.ancillary/runs/20260817T140000-h3-middle-frame/phases/01/evidence/verification.md
+.ancillary/runs/20260817T140000-h3-middle-frame/DECISIONS.md
+.ancillary/runs/20260817T140000-h3-middle-frame/COMPLETION.md

@@ -1,0 +1,302 @@
+{
+  "last_node_id": 16,
+  "last_link_id": 18,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "UNETLoader",
+      "pos": [-900, -420],
+      "size": [360, 106],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{"name": "MODEL", "type": "MODEL", "links": [1]}],
+      "properties": {"Node name for S&R": "UNETLoader"},
+      "widgets_values": ["minimax_h3_ref2va_pruned_int8_convrot.safetensors", "default"],
+      "title": "Load MiniMax H3 Ref2VA"
+    },
+    {
+      "id": 2,
+      "type": "ModelAttentionBackend",
+      "pos": [-480, -420],
+      "size": [360, 90],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [{"name": "model", "type": "MODEL", "link": 1}],
+      "outputs": [{"name": "MODEL", "type": "MODEL", "links": [2]}],
+      "properties": {"Node name for S&R": "ModelAttentionBackend"},
+      "widgets_values": ["comfy kitchen attention"],
+      "title": "Comfy Kitchen Attention"
+    },
+    {
+      "id": 3,
+      "type": "MiniMaxH3SigmaShift",
+      "pos": [-60, -420],
+      "size": [360, 150],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [{"name": "model", "type": "MODEL", "link": 2}],
+      "outputs": [{"name": "MODEL", "type": "MODEL", "links": [3, 4]}],
+      "properties": {"Node name for S&R": "MiniMaxH3SigmaShift"},
+      "widgets_values": [12.0, 3.0],
+      "title": "Native H3 Video/Audio Sigma Shift"
+    },
+    {
+      "id": 4,
+      "type": "CLIPLoader",
+      "pos": [-900, -210],
+      "size": [360, 132],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{"name": "CLIP", "type": "CLIP", "links": [5]}],
+      "properties": {"Node name for S&R": "CLIPLoader"},
+      "widgets_values": ["qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors", "minimax", "default"],
+      "title": "Load MiniMax H3 Text Encoder"
+    },
+    {
+      "id": 5,
+      "type": "VAELoader",
+      "pos": [-900, 20],
+      "size": [360, 90],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{"name": "VAE", "type": "VAE", "links": [6, 16]}],
+      "properties": {"Node name for S&R": "VAELoader"},
+      "widgets_values": ["minimax_h3_video_vae_fp16.safetensors"],
+      "title": "Load Native H3 Video VAE"
+    },
+    {
+      "id": 6,
+      "type": "VAELoader",
+      "pos": [-900, 140],
+      "size": [360, 90],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{"name": "VAE", "type": "VAE", "links": [7]}],
+      "properties": {"Node name for S&R": "VAELoader"},
+      "widgets_values": ["minimax_h3_audio_vae_fp32.safetensors"],
+      "title": "Load Native H3 Audio VAE"
+    },
+    {
+      "id": 7,
+      "type": "LoadImage",
+      "pos": [-900, 290],
+      "size": [360, 310],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "IMAGE", "type": "IMAGE", "links": [8]},
+        {"name": "MASK", "type": "MASK", "links": null}
+      ],
+      "properties": {"Node name for S&R": "LoadImage"},
+      "widgets_values": ["choose_reference_image.png"],
+      "title": "Load Reference Image"
+    },
+    {
+      "id": 8,
+      "type": "MiniMaxH3ReferenceToVideo",
+      "pos": [-360, 40],
+      "size": [620, 390],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {"name": "clip", "type": "CLIP", "link": 5},
+        {"name": "vae", "type": "VAE", "link": 6},
+        {"name": "audio_vae", "type": "VAE", "link": 7},
+        {"label": "ref_image_0", "name": "ref_images.ref_image_0", "shape": 7, "type": "IMAGE", "link": 8},
+        {"label": "ref_video_0", "name": "ref_videos.ref_video_0", "shape": 7, "type": "IMAGE", "link": null},
+        {"label": "ref_video_audio_0", "name": "ref_video_audios.ref_video_audio_0", "shape": 7, "type": "AUDIO", "link": null},
+        {"label": "ref_audio_0", "name": "ref_audios.ref_audio_0", "shape": 7, "type": "AUDIO", "link": null},
+        {"name": "prompt", "type": "STRING", "widget": {"name": "prompt"}, "link": null},
+        {"name": "width", "type": "INT", "widget": {"name": "width"}, "link": null},
+        {"name": "height", "type": "INT", "widget": {"name": "height"}, "link": null},
+        {"name": "length", "type": "INT", "widget": {"name": "length"}, "link": null},
+        {"name": "ref_image_size", "type": "COMBO", "widget": {"name": "ref_image_size"}, "link": null}
+      ],
+      "outputs": [
+        {"name": "positive", "type": "CONDITIONING", "links": [9]},
+        {"name": "LATENT", "type": "LATENT", "links": [10]}
+      ],
+      "properties": {"Node name for S&R": "MiniMaxH3ReferenceToVideo"},
+      "widgets_values": [
+        "Reference-guided H3 video. Keep <Picture 1> recognizable while creating a coherent cinematic five-second shot with gentle camera motion and natural expression.",
+        1024,
+        1536,
+        124,
+        "max"
+      ],
+      "title": "Native H3 Reference-to-Video — 124 Frames"
+    },
+    {
+      "id": 9,
+      "type": "RandomNoise",
+      "pos": [340, -300],
+      "size": [360, 106],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{"name": "NOISE", "type": "NOISE", "links": [11]}],
+      "properties": {"Node name for S&R": "RandomNoise"},
+      "widgets_values": [20260817, "fixed"],
+      "title": "Seed"
+    },
+    {
+      "id": 10,
+      "type": "KSamplerSelect",
+      "pos": [340, -140],
+      "size": [360, 90],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [{"name": "SAMPLER", "type": "SAMPLER", "links": [13]}],
+      "properties": {"Node name for S&R": "KSamplerSelect"},
+      "widgets_values": ["sa_solver"],
+      "title": "SA Solver"
+    },
+    {
+      "id": 11,
+      "type": "BasicScheduler",
+      "pos": [340, -420],
+      "size": [360, 132],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [{"name": "model", "type": "MODEL", "link": 3}],
+      "outputs": [{"name": "SIGMAS", "type": "SIGMAS", "links": [14]}],
+      "properties": {"Node name for S&R": "BasicScheduler"},
+      "widgets_values": ["simple", 8, 1.0],
+      "title": "8 Steps / Simple Scheduler"
+    },
+    {
+      "id": 12,
+      "type": "BasicGuider",
+      "pos": [340, 40],
+      "size": [360, 106],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": 4},
+        {"name": "conditioning", "type": "CONDITIONING", "link": 9}
+      ],
+      "outputs": [{"name": "GUIDER", "type": "GUIDER", "links": [12]}],
+      "properties": {"Node name for S&R": "BasicGuider"},
+      "widgets_values": [],
+      "title": "Native H3 Guidance"
+    },
+    {
+      "id": 13,
+      "type": "SamplerCustomAdvanced",
+      "pos": [800, -20],
+      "size": [360, 184],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {"name": "noise", "type": "NOISE", "link": 11},
+        {"name": "guider", "type": "GUIDER", "link": 12},
+        {"name": "sampler", "type": "SAMPLER", "link": 13},
+        {"name": "sigmas", "type": "SIGMAS", "link": 14},
+        {"name": "latent_image", "type": "LATENT", "link": 10}
+      ],
+      "outputs": [
+        {"name": "output", "type": "LATENT", "links": [15]},
+        {"name": "denoised_output", "type": "LATENT", "links": null}
+      ],
+      "properties": {"Node name for S&R": "SamplerCustomAdvanced"},
+      "widgets_values": [],
+      "title": "Sample Native H3 Video Latent"
+    },
+    {
+      "id": 14,
+      "type": "VAEDecodeTiled",
+      "pos": [1220, -20],
+      "size": [360, 150],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {"name": "samples", "type": "LATENT", "link": 15},
+        {"name": "vae", "type": "VAE", "link": 16}
+      ],
+      "outputs": [{"name": "IMAGE", "type": "IMAGE", "links": [17]}],
+      "properties": {"Node name for S&R": "VAEDecodeTiled"},
+      "widgets_values": [512, 64, 64, 8],
+      "title": "Decode with Native H3 Video VAE"
+    },
+    {
+      "id": 15,
+      "type": "MM1FramePickMiddleFrame",
+      "pos": [1640, -20],
+      "size": [360, 110],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {"name": "images", "type": "IMAGE", "link": 17},
+        {"name": "total_range", "type": "INT", "widget": {"name": "total_range"}, "link": null},
+        {"name": "midpoint", "type": "INT", "widget": {"name": "midpoint"}, "link": null}
+      ],
+      "outputs": [{"name": "IMAGE", "type": "IMAGE", "links": [18]}],
+      "properties": {"Node name for S&R": "MM1FramePickMiddleFrame"},
+      "widgets_values": [124, 62],
+      "title": "Select Frame (Range 124 / Midpoint 62)"
+    },
+    {
+      "id": 16,
+      "type": "SaveImage",
+      "pos": [2060, -20],
+      "size": [360, 270],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [{"name": "images", "type": "IMAGE", "link": 18}],
+      "outputs": [{"name": "images", "type": "IMAGE", "links": null}],
+      "properties": {"Node name for S&R": "SaveImage"},
+      "widgets_values": ["MM1Frame/h3_middle_frame"],
+      "title": "Save Middle Frame"
+    }
+  ],
+  "links": [
+    [1, 1, 0, 2, 0, "MODEL"],
+    [2, 2, 0, 3, 0, "MODEL"],
+    [3, 3, 0, 11, 0, "MODEL"],
+    [4, 3, 0, 12, 0, "MODEL"],
+    [5, 4, 0, 8, 0, "CLIP"],
+    [6, 5, 0, 8, 1, "VAE"],
+    [7, 6, 0, 8, 2, "VAE"],
+    [8, 7, 0, 8, 3, "IMAGE"],
+    [9, 8, 0, 12, 1, "CONDITIONING"],
+    [10, 8, 1, 13, 4, "LATENT"],
+    [11, 9, 0, 13, 0, "NOISE"],
+    [12, 12, 0, 13, 1, "GUIDER"],
+    [13, 10, 0, 13, 2, "SAMPLER"],
+    [14, 11, 0, 13, 3, "SIGMAS"],
+    [15, 13, 0, 14, 0, "LATENT"],
+    [16, 5, 0, 14, 1, "VAE"],
+    [17, 14, 0, 15, 0, "IMAGE"],
+    [18, 15, 0, 16, 0, "IMAGE"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "workflow_description": "Native MiniMax H3 reference-to-video workflow. The video VAE decodes all 124 generated frames, then MM1FramePickMiddleFrame uses Total Range 124 and Midpoint 62 to return one frame for SaveImage.",
+    "frame_selection": "Total Range 124 -> Midpoint index 62",
+    "vae_contract": "Use the native MiniMax H3 video VAE for this multi-frame path; do not substitute the MM1Frame T=1 image VAE."
+  },
+  "version": 0.4
+}
