@@ -1,4 +1,4 @@
-"""Native ComfyUI registration for MiniMax H3 one-frame and middle-frame nodes."""
+"""Native ComfyUI registration for MiniMax H3 one-frame nodes."""
 
 from comfy_api.latest import ComfyExtension
 
@@ -6,10 +6,9 @@ if __package__:
     from .nodes import (
         EmptyMiniMaxH3OneFrameLatent,
         MiniMaxH3ReferenceToImageOneFrame,
-        MM1FramePickMiddleFrame,
     )
 else:
-    from nodes import EmptyMiniMaxH3OneFrameLatent, MiniMaxH3ReferenceToImageOneFrame, MM1FramePickMiddleFrame
+    from nodes import EmptyMiniMaxH3OneFrameLatent, MiniMaxH3ReferenceToImageOneFrame
 
 
 class MiniMaxH3OneFrameExtension(ComfyExtension):
@@ -17,7 +16,6 @@ class MiniMaxH3OneFrameExtension(ComfyExtension):
         return [
             EmptyMiniMaxH3OneFrameLatent,
             MiniMaxH3ReferenceToImageOneFrame,
-            MM1FramePickMiddleFrame,
         ]
 
 

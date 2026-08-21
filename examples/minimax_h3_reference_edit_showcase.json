@@ -55,7 +55,7 @@
       ],
       "properties": {"Node name for S&R": "LoraLoaderModelOnly"},
       "widgets_values": [
-        "h3\\minimax_h3_fl2v_lightx2v_turbo_8step_v1.0_resized_avg_rank_24_bf16.safetensors",
+        "turb\\unknown__fl2v__lightx2v-turbo8__v1.0__rank24-resized__bf16__unpruned.safetensors",
         0.75
       ],
       "title": "8-Step Turbo LoRA"
@@ -337,10 +337,7 @@
   ],
   "config": {},
   "extra": {
-    "ds": {
-      "scale": 0.65,
-      "offset": [950, 470]
-    }
+    "workflow_description": "MiniMax H3 T=1 reference-edit workflow using the original distilled-guidance path, Turbo LoRA, and the T=1 image VAE for direct final decoding."
   },
   "version": 0.4
 }
