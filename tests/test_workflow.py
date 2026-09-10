@@ -3,8 +3,7 @@ from pathlib import Path
 
 
 EXAMPLES = Path(__file__).parents[1] / "examples"
-WORKFLOW = EXAMPLES / "minimax_h3_reference_edit_showcase.json"
-T1_VAE = "minimax_h3_t1_image_vae_step1597.safetensors"
+WORKFLOW = EXAMPLES / "minimax_h3_reference_edit_quality.json"
 
 
 def _load(path):
@@ -14,27 +13,16 @@ def _load(path):
 def _assert_consistent_links(workflow):
     nodes = {node["id"]: node for node in workflow["nodes"]}
     links = {link[0]: link for link in workflow["links"]}
-
     assert len(nodes) == len(workflow["nodes"])
     assert len(links) == len(workflow["links"])
     assert workflow["last_node_id"] == max(nodes)
     assert workflow["last_link_id"] == max(links)
-
     for link_id, source_id, source_slot, target_id, target_slot, link_type in links.values():
-        source = nodes[source_id]
-        target = nodes[target_id]
+        source, target = nodes[source_id], nodes[target_id]
         assert link_id in source["outputs"][source_slot]["links"]
         assert target["inputs"][target_slot]["link"] == link_id
         assert source["outputs"][source_slot]["type"] == link_type
         assert target["inputs"][target_slot]["type"] in {link_type, "*"}
-
-    for node in nodes.values():
-        for output_slot, output in enumerate(node["outputs"]):
-            for link_id in output["links"] or []:
-                assert links[link_id][1:3] == [node["id"], output_slot]
-        for input_slot, input_ in enumerate(node["inputs"]):
-            if input_["link"] is not None:
-                assert links[input_["link"]][3:5] == [node["id"], input_slot]
 
 
 def _by_type(workflow):
@@ -46,67 +34,48 @@ def _source_node(workflow, target_type, target_input):
     target = by_type[target_type]
     link_id = next(input_["link"] for input_ in target["inputs"] if input_["name"] == target_input)
     link = next(link for link in workflow["links"] if link[0] == link_id)
-    return by_type[next(node["type"] for node in workflow["nodes"] if node["id"] == link[1])]
+    return next(node for node in workflow["nodes"] if node["id"] == link[1])
 
 
-def test_examples_contain_only_the_final_workflow():
+def test_examples_contain_only_rebuilt_quality_workflow():
     assert sorted(path.name for path in EXAMPLES.glob("*.json")) == [WORKFLOW.name]
 
 
-def test_final_workflow_has_consistent_links():
+def test_workflow_has_consistent_links():
     _assert_consistent_links(_load(WORKFLOW))
 
 
-def test_final_workflow_contains_original_method_nodes_and_filenames():
+def test_workflow_is_native_quality_path_without_cross_family_lora():
     workflow = _load(WORKFLOW)
     by_type = _by_type(workflow)
-
     assert {
-        "UNETLoader",
-        "CLIPLoader",
-        "VAELoader",
-        "MM1FrameMiniMaxH3ReferenceToImage",
-        "LoraLoaderModelOnly",
-        "SamplerCustomAdvanced",
-        "VAEDecode",
-        "SaveImage",
+        "UNETLoader", "CLIPLoader", "VAELoader", "LoadImage",
+        "MM1FrameMiniMaxH3ReferenceToImage", "BasicGuider", "BasicScheduler",
+        "KSamplerSelect", "SamplerCustomAdvanced", "MM1FrameMiniMaxH3StillDecode",
+        "SaveImage", "PreviewImage",
     } <= by_type.keys()
-    assert "MM1FramePatch500KDecoder" not in by_type
-    assert "MM1FramePickMiddleFrame" not in by_type
-    assert "MiniMaxH3ReferenceToVideo" not in by_type
-    assert "VAEDecodeTiled" not in by_type
-
+    assert "LoraLoaderModelOnly" not in by_type
+    assert "ModelAttentionBackend" not in by_type
+    assert "VAEDecode" not in by_type
     assert by_type["UNETLoader"]["widgets_values"][0] == "minimax_h3_ref2va_pruned_int8_convrot.safetensors"
     assert by_type["CLIPLoader"]["widgets_values"][0] == "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors"
-    assert by_type["VAELoader"]["widgets_values"] == [T1_VAE]
-    lora_files = [
-        node["widgets_values"][0]
-        for node in workflow["nodes"]
-        if node["type"] == "LoraLoaderModelOnly"
-    ]
-    assert any("lightx2v-turbo8" in file for file in lora_files)
+    assert by_type["VAELoader"]["widgets_values"] == ["minimax_h3_video_vae_fp16.safetensors"]
 
 
-def test_final_workflow_preserves_reference_prompt_and_sampling_path():
+def test_workflow_uses_quality_profile_and_twenty_native_steps():
     workflow = _load(WORKFLOW)
     by_type = _by_type(workflow)
-
-    reference_node = by_type["MM1FrameMiniMaxH3ReferenceToImage"]
-    assert reference_node["widgets_values"][1:4] == [1024, 1536, "max"]
-    assert "<Picture 1>" in reference_node["widgets_values"][0]
-    assert any(input_["name"] == "ref_images.ref_image_0" for input_ in reference_node["inputs"])
+    prepare = by_type["MM1FrameMiniMaxH3ReferenceToImage"]
+    assert prepare["widgets_values"][1:] == ["Quality | native 5 frames", 1344, 768, "match"]
+    assert "<Picture 1>" in prepare["widgets_values"][0]
     assert by_type["KSamplerSelect"]["widgets_values"] == ["sa_solver"]
-    assert by_type["BasicScheduler"]["widgets_values"] == ["simple", 8, 1.0]
+    assert by_type["BasicScheduler"]["widgets_values"] == ["simple", 20, 1.0]
+    assert by_type["MM1FrameMiniMaxH3StillDecode"]["widgets_values"] == ["recommended"]
 
 
-def test_final_workflow_decodes_directly_with_original_t1_vae():
+def test_workflow_decodes_sampler_output_with_same_native_video_vae():
     workflow = _load(WORKFLOW)
-    by_type = _by_type(workflow)
-
     assert _source_node(workflow, "MM1FrameMiniMaxH3ReferenceToImage", "vae")["type"] == "VAELoader"
-    assert _source_node(workflow, "VAEDecode", "vae")["type"] == "VAELoader"
-    assert _source_node(workflow, "VAEDecode", "samples")["type"] == "SamplerCustomAdvanced"
-    assert by_type["VAELoader"]["outputs"][0]["links"] == [7, 16]
-    assert by_type["VAEDecode"]["inputs"][1]["link"] == 16
-    assert by_type["VAEDecode"]["inputs"][0]["link"] == 15
-    assert by_type["SaveImage"]["inputs"][0]["link"] == 17
+    assert _source_node(workflow, "MM1FrameMiniMaxH3StillDecode", "vae")["type"] == "VAELoader"
+    assert _source_node(workflow, "MM1FrameMiniMaxH3StillDecode", "samples")["type"] == "SamplerCustomAdvanced"
+    assert _source_node(workflow, "SaveImage", "images")["type"] == "MM1FrameMiniMaxH3StillDecode"

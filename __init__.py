@@ -6,9 +6,10 @@ if __package__:
     from .nodes import (
         EmptyMiniMaxH3OneFrameLatent,
         MiniMaxH3ReferenceToImageOneFrame,
+        MiniMaxH3StillDecode,
     )
 else:
-    from nodes import EmptyMiniMaxH3OneFrameLatent, MiniMaxH3ReferenceToImageOneFrame
+    from nodes import EmptyMiniMaxH3OneFrameLatent, MiniMaxH3ReferenceToImageOneFrame, MiniMaxH3StillDecode
 
 
 class MiniMaxH3OneFrameExtension(ComfyExtension):
@@ -16,6 +17,7 @@ class MiniMaxH3OneFrameExtension(ComfyExtension):
         return [
             EmptyMiniMaxH3OneFrameLatent,
             MiniMaxH3ReferenceToImageOneFrame,
+            MiniMaxH3StillDecode,
         ]
 
 
